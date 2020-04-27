@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useCallback } from 'react';
 import {
   ScrollView,
   View,
@@ -7,6 +7,8 @@ import {
   StyleSheet,
   Button,
   Platform,
+  Alert,
+  Share,
 } from 'react-native';
 import { useSelector } from 'react-redux';
 import { HeaderButtons, Item } from 'react-navigation-header-buttons';
@@ -19,6 +21,38 @@ const BlogDetailScreen = props => {
   const selectedBlog = useSelector(state =>
     state.blogs.blogs.find(blog => blog.id === blogId)
   );
+
+  const shareBlogHandler = useCallback(async () => {
+    try {
+      let content;
+      let options;
+      const url = 'rnbapp://blog_id';
+      if (Platform.OS === 'android') {
+        content = { message: `Read this article: ${url}`, title: 'Blog App' };
+        options = { dialogTitle: 'Blog App' };
+      } else {
+        content = { message: 'Read this article', url };
+        options = { subject: 'Blog App' };
+      }
+      const result = await Share.share(content, options);
+
+      if (result.action === Share.sharedAction) {
+        if (result.activityType) {
+          // shared with activity type of result.activityType
+        } else {
+          // shared
+        }
+      } else if (result.action === Share.dismissedAction) {
+        // dismissed
+      }
+    } catch (error) {
+      alert(error.message);
+    }
+  }, []);
+
+  useEffect(() => {
+    props.navigation.setParams({ share: shareBlogHandler });
+  }, [shareBlogHandler]);
 
   return (
     <ScrollView>
@@ -42,6 +76,8 @@ const BlogDetailScreen = props => {
 };
 
 BlogDetailScreen.navigationOptions = navData => {
+  const shareFn = navData.navigation.getParam('share');
+
   return {
     title: navData.navigation.getParam('blogTitle'),
     headerRight: () => (
@@ -51,7 +87,7 @@ BlogDetailScreen.navigationOptions = navData => {
           iconName={
             Platform.OS === 'android' ? 'md-share-alt' : 'ios-share-alt'
           }
-          onPress={() => {}}
+          onPress={shareFn}
         />
       </HeaderButtons>
     ),
