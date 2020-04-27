@@ -52,6 +52,7 @@ const AdminNavigator = createStackNavigator(
     UserBlogs: UserBlogsScreen,
     EditBlog: EditBlogScreen,
     Auth: AuthScreen,
+    BlogDetail: BlogDetailScreen,
   },
   {
     navigationOptions: {

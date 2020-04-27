@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { useSelector } from 'react-redux';
 import { HeaderButtons, Item } from 'react-navigation-header-buttons';
+import { Linking } from 'expo';
 
 import Colors from '../../constants/Colors';
 import HeaderButton from '../../components/UI/HeaderButton';
@@ -21,14 +22,23 @@ const BlogDetailScreen = props => {
   const selectedBlog = useSelector(state =>
     state.blogs.blogs.find(blog => blog.id === blogId)
   );
+  useEffect(() => {
+    props.navigation.setParams({ blogTitle: selectedBlog.title });
+  }, [selectedBlog]);
 
   const shareBlogHandler = useCallback(async () => {
     try {
       let content;
       let options;
-      const url = 'rnbapp://blog_id';
+      const url =
+        `http://wb.tinkhub.com:8000/link?uri=${Linking.makeUrl('/')}` +
+        '&id=' +
+        blogId;
       if (Platform.OS === 'android') {
-        content = { message: `Read this article: ${url}`, title: 'Blog App' };
+        content = {
+          message: `Read this article: ${url}`,
+          title: 'Blog App',
+        };
         options = { dialogTitle: 'Blog App' };
       } else {
         content = { message: 'Read this article', url };
@@ -58,7 +68,11 @@ const BlogDetailScreen = props => {
     <ScrollView>
       <Image style={styles.image} source={{ uri: selectedBlog.imageUrl }} />
       <View style={styles.actions}>
-        <Button color={Colors.primary} title='Share' onPress={() => {}} />
+        <Button
+          color={Colors.primary}
+          title='Share'
+          onPress={shareBlogHandler}
+        />
       </View>
       <View style={styles.details}>
         <Text numberOfLines={1} ellipsizeMode='tail' style={styles.title}>

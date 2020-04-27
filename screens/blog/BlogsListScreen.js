@@ -10,13 +10,40 @@ import {
 } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
 import { HeaderButtons, Item } from 'react-navigation-header-buttons';
+import { Linking } from 'expo';
 
 import BlogItem from '../../components/blog/BlogItem';
 import HeaderButton from '../../components/UI/HeaderButton';
 import Colors from '../../constants/Colors';
 import * as blogsActions from '../../store/actions/blogs';
 
+const useMount = func => useEffect(() => func(), []);
+
+const useInitialURL = () => {
+  const [url, setUrl] = useState(null);
+  const [processing, setProcessing] = useState(true);
+
+  useMount(() => {
+    const getUrlAsync = async () => {
+      // Get the deep link used to open the app
+      const initialUrl = await Linking.getInitialURL();
+
+      // The setTimeout is just for testing purpose
+      setTimeout(() => {
+        setUrl(initialUrl);
+        setProcessing(false);
+      }, 1000);
+    };
+
+    getUrlAsync();
+  });
+
+  return { url, processing };
+};
+
 const BlogsListScreen = props => {
+  const { url: initialUrl, processing } = useInitialURL();
+  const [deepLinkProcessed, setDeepLinkProcessed] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState();
@@ -48,6 +75,17 @@ const BlogsListScreen = props => {
     loadBlogs().then(() => setIsLoading(false));
   }, [loadBlogs]);
 
+  const _handleRedirect = useCallback(event => {
+    let data = Linking.parse(event.url);
+    props.navigation.navigate('BlogDetail', {
+      blogId: data.queryParams.id,
+    });
+  }, []);
+
+  useEffect(() => {
+    Linking.addEventListener('url', _handleRedirect);
+  }, [_handleRedirect]);
+
   const selectItemHandler = (id, title) => {
     props.navigation.navigate('BlogDetail', {
       blogId: id,
@@ -78,6 +116,19 @@ const BlogsListScreen = props => {
         <Text>No blog found. Start adding some!</Text>
       </View>
     );
+  }
+
+  if (!isLoading && !processing && initialUrl && !deepLinkProcessed) {
+    setDeepLinkProcessed(true);
+    setTimeout(() => {
+      let data = Linking.parse(initialUrl);
+      if (data && data.queryParams && data.queryParams.id) {
+        const blog = blogs.find(b => b.id === data.queryParams.id);
+        props.navigation.navigate('BlogDetail', {
+          blogId: data.queryParams.id,
+        });
+      }
+    }, 800);
   }
 
   return (
