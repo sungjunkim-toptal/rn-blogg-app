@@ -30,16 +30,25 @@ const ImgPicker = props => {
     }
     return true;
   };
-  const takeImageHandler = async () => {
+  const takeOrPickImageHandler = async isTake => {
     const hasPermission = await verifyPermissions();
     if (!hasPermission) {
       return;
     }
-    const image = await ImagePicker.launchCameraAsync({
-      allowsEditing: true,
-      aspect: [16, 9],
-      quality: 0.5,
-    });
+    let image;
+    if (isTake) {
+      image = await ImagePicker.launchCameraAsync({
+        allowsEditing: true,
+        aspect: [16, 9],
+        quality: 0.5,
+      });
+    } else {
+      image = await ImagePicker.launchImageLibraryAsync({
+        allowsEditing: true,
+        aspect: [16, 9],
+        quality: 0.5,
+      });
+    }
     // console.log(image);
     setPickedImage(image.uri);
     props.onImageTaken(image.uri);
@@ -54,11 +63,18 @@ const ImgPicker = props => {
           <Image style={styles.image} source={{ uri: pickedImage }} />
         )}
       </View>
-      <Button
-        title='Take Image'
-        color={Colors.primary}
-        onPress={takeImageHandler}
-      ></Button>
+      <View style={styles.buttonsContainer}>
+        <Button
+          title='Take an image'
+          color={Colors.primary}
+          onPress={() => takeOrPickImageHandler(true)}
+        />
+        <Button
+          title='Pick an image'
+          color={Colors.primary}
+          onPress={() => takeOrPickImageHandler(false)}
+        />
+      </View>
     </View>
   );
 };
@@ -80,6 +96,13 @@ const styles = StyleSheet.create({
   image: {
     width: '100%',
     height: '100%',
+  },
+  buttonsContainer: {
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
   },
 });
 
