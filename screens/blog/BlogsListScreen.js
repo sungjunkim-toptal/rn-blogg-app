@@ -142,7 +142,7 @@ const BlogsListScreen = props => {
           image={itemData.item.imageUrl}
           title={itemData.item.title}
           author={itemData.item.author}
-          publishedDate={itemData.item.publishedDate.toDateString()}
+          publishedDate={itemData.item.publishedDate.toLocaleString()}
           content={itemData.item.content}
           onSelect={() => {
             selectItemHandler(itemData.item.id, itemData.item.title);

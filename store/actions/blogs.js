@@ -6,6 +6,7 @@ export const DELETE_BLOG = 'DELETE_BLOG';
 export const CREATE_BLOG = 'CREATE_BLOG';
 export const UPDATE_BLOG = 'UPDATE_BLOG';
 export const SET_BLOGS = 'SET_BLOGS';
+export const SET_USER_BLOGS = 'SET_USER_BLOGS';
 
 export const fetchBlogs = () => {
   return async (dispatch, getState) => {
@@ -20,29 +21,46 @@ export const fetchBlogs = () => {
       }
 
       const resData = await response.json();
+      // console.log(resData);i
       const loadedBlogs = [];
       for (const key in resData) {
         loadedBlogs.push(
           new Blog(
             key,
             resData[key].authorId,
-            'James',
+            resData[key].author,
             resData[key].title,
             resData[key].imageUrl,
             resData[key].content,
-            new Date()
+            new Date(resData[key].publishedTime)
           )
         );
       }
+      loadedBlogs.sort(
+        (a, b) => b.publishedDate.getTime() - a.publishedDate.getTime()
+      );
 
+      // console.log('userId : ' + userId);
       dispatch({
         type: SET_BLOGS,
         blogs: loadedBlogs,
-        userBlogs: loadedBlogs.filter(blog => blog.authorId === userId),
+        userBlogs: userId
+          ? loadedBlogs.filter(blog => blog.authorId === userId)
+          : [],
       });
     } catch (err) {
       throw err;
     }
+  };
+};
+
+export const setUserBlogs = () => {
+  return (dispatch, getState) => {
+    const userId = getState().auth.userId;
+    dispatch({
+      type: SET_USER_BLOGS,
+      userId: userId,
+    });
   };
 };
 
@@ -68,6 +86,8 @@ export const createBlog = (title, imageUrl, content) => {
   return async (dispatch, getState) => {
     const token = getState().auth.token;
     const userId = getState().auth.userId;
+    const userDisplayName = getState().auth.displayName;
+    const publishedTime = new Date().getTime();
     if (imageUrl.startsWith('file:')) {
       const formData = new FormData();
       formData.append('file', {
@@ -96,9 +116,11 @@ export const createBlog = (title, imageUrl, content) => {
         },
         body: JSON.stringify({
           authorId: userId,
+          author: userDisplayName,
           title,
           imageUrl,
           content,
+          publishedTime,
         }),
       }
     );
@@ -116,9 +138,11 @@ export const createBlog = (title, imageUrl, content) => {
       blogData: {
         id: resData.name,
         authorId: userId,
+        author: userDisplayName,
         title,
         imageUrl,
         content,
+        publishedTime,
       },
     });
   };

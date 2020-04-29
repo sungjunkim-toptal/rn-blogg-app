@@ -3,6 +3,7 @@ import {
   CREATE_BLOG,
   UPDATE_BLOG,
   SET_BLOGS,
+  SET_USER_BLOGS,
 } from '../actions/blogs';
 import { AUTHENTICATE } from '../actions/auth';
 import Blog from '../../models/blog';
@@ -19,20 +20,25 @@ export default (state = initialState, action) => {
         blogs: action.blogs,
         userBlogs: action.userBlogs,
       };
+    case SET_USER_BLOGS:
+      return {
+        ...state,
+        userBlogs: state.blogs.filter(blog => blog.authorId === action.userId),
+      };
     case CREATE_BLOG:
       const newBlog = new Blog(
         action.blogData.id,
         action.blogData.authorId,
-        'James',
+        action.blogData.author,
         action.blogData.title,
         action.blogData.imageUrl,
         action.blogData.content,
-        new Date()
+        new Date(action.blogData.publishedTime)
       );
       return {
         ...state,
-        blogs: state.blogs.concat(newBlog),
-        userBlogs: state.userBlogs.concat(newBlog),
+        blogs: [newBlog].concat(state.blogs),
+        userBlogs: [newBlog].concat(state.userBlogs),
       };
     case UPDATE_BLOG:
       const userBlogIndex = state.userBlogs.findIndex(
@@ -45,7 +51,7 @@ export default (state = initialState, action) => {
         action.blogData.title,
         action.blogData.imageUrl,
         action.blogData.content,
-        new Date()
+        state.userBlogs[userBlogIndex].publishedDate
       );
       const updatedUserBlogs = [...state.userBlogs];
       updatedUserBlogs[userBlogIndex] = updatedBlog;

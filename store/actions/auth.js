@@ -5,14 +5,20 @@ export const LOGOUT = 'LOGOUT';
 
 let timer;
 
-export const authenticate = (userId, token, expirationTime) => {
+export const authenticate = (userId, token, displayName, expirationTime) => {
   return dispatch => {
     // dispatch(setLogoutTimer(expiryTime));
-    dispatch({ type: AUTHENTICATE, userId, token, expirationTime });
+    dispatch({
+      type: AUTHENTICATE,
+      userId,
+      token,
+      displayName,
+      expirationTime,
+    });
   };
 };
 
-export const signup = (email, password) => {
+export const signup = (email, password, name) => {
   return async dispatch => {
     const response = await fetch(
       'https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyCwgj1LeENGIVe5OBqkJ14RHN0-5Zn_e6E',
@@ -24,6 +30,7 @@ export const signup = (email, password) => {
         body: JSON.stringify({
           email: email,
           password: password,
+          displayName: name,
           returnSecureToken: true,
         }),
       }
@@ -45,10 +52,20 @@ export const signup = (email, password) => {
       new Date().getTime() + parseInt(resData.expiresIn) * 1000
     );
     dispatch(
-      authenticate(resData.localId, resData.idToken, expirationDate.getTime())
+      authenticate(
+        resData.localId,
+        resData.idToken,
+        resData.displayName,
+        expirationDate.getTime()
+      )
     );
 
-    saveDataToStorage(resData.idToken, resData.localId, expirationDate);
+    saveDataToStorage(
+      resData.idToken,
+      resData.localId,
+      resData.displayName,
+      expirationDate
+    );
   };
 };
 
@@ -87,10 +104,19 @@ export const login = (email, password) => {
       new Date().getTime() + parseInt(resData.expiresIn) * 1000
     );
     dispatch(
-      authenticate(resData.localId, resData.idToken, expirationDate.getTime())
+      authenticate(
+        resData.localId,
+        resData.idToken,
+        resData.displayName,
+        expirationDate.getTime()
+      )
     );
-
-    saveDataToStorage(resData.idToken, resData.localId, expirationDate);
+    saveDataToStorage(
+      resData.idToken,
+      resData.localId,
+      resData.displayName,
+      expirationDate
+    );
   };
 };
 
@@ -113,9 +139,14 @@ const setLogoutTimer = expirationTime => {
   };
 };
 
-const saveDataToStorage = (token, userId, expirationDate) => {
+const saveDataToStorage = (token, userId, displayName, expirationDate) => {
   AsyncStorage.setItem(
     'userData',
-    JSON.stringify({ token, userId, expiryDate: expirationDate.toISOString() })
+    JSON.stringify({
+      token,
+      userId,
+      displayName,
+      expiryDate: expirationDate.toISOString(),
+    })
   );
 };

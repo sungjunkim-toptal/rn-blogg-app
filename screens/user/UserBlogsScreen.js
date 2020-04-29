@@ -22,6 +22,20 @@ const UserBlogScreen = props => {
     }
   }, [error]);
 
+  const setUserBlogs = useCallback(() => {
+    dispatch(BlogsActions.setUserBlogs());
+  }, [BlogsActions]);
+
+  useEffect(() => {
+    const willFocusSub = props.navigation.addListener('willFocus', () => {
+      setUserBlogs();
+    });
+
+    return () => {
+      willFocusSub.remove();
+    };
+  }, [setUserBlogs]);
+
   const editBlogHandler = id => {
     props.navigation.navigate('EditBlog', { blogId: id });
   };
@@ -66,13 +80,15 @@ const UserBlogScreen = props => {
     return (
       <View style={styles.centered}>
         <Text>Please Login or Sign Up.</Text>
-        <Button
-          title='Login/Sign Up'
-          color={Colors.primary}
-          onPress={() => {
-            props.navigation.navigate('Auth');
-          }}
-        />
+        <View style={styles.login}>
+          <Button
+            title='Login/Sign Up'
+            color={Colors.primary}
+            onPress={() => {
+              props.navigation.navigate('Auth');
+            }}
+          />
+        </View>
       </View>
     );
   }
@@ -94,7 +110,7 @@ const UserBlogScreen = props => {
           image={itemData.item.imageUrl}
           title={itemData.item.title}
           author={itemData.item.author}
-          publishedDate={itemData.item.publishedDate.toDateString()}
+          publishedDate={itemData.item.publishedDate.toLocaleString()}
           content={itemData.item.content}
           onSelect={() => {
             editBlogHandler(itemData.item.id);
@@ -155,6 +171,9 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  login: {
+    marginTop: 10,
   },
 });
 

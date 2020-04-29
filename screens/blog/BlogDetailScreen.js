@@ -79,7 +79,7 @@ const BlogDetailScreen = props => {
           {selectedBlog.title}
         </Text>
         <Text style={styles.author}>
-          {selectedBlog.author}({selectedBlog.publishedDate.toDateString()})
+          {selectedBlog.author}({selectedBlog.publishedDate.toLocaleString()})
         </Text>
       </View>
       <View style={styles.contentContainer}>

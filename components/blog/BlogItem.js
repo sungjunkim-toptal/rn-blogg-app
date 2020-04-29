@@ -87,6 +87,7 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     padding: 5,
+    height: 50,
   },
   content: {
     fontFamily: 'open-sans',

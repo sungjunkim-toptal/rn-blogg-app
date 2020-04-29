@@ -21,7 +21,7 @@ const StartupScreen = props => {
         return;
       }
       const transformedData = JSON.parse(userData);
-      const { token, userId, expiryDate } = transformedData;
+      const { token, userId, displayName, expiryDate } = transformedData;
       const expirationDate = new Date(expiryDate);
 
       if (expirationDate <= new Date() || !token || !userId) {
@@ -31,7 +31,9 @@ const StartupScreen = props => {
       const expirationTime = expirationDate.getTime();
 
       props.navigation.navigate('Blog');
-      dispatch(authActions.authenticate(userId, token, expirationTime));
+      dispatch(
+        authActions.authenticate(userId, token, displayName, expirationTime)
+      );
     };
     tryLogin();
   }, [dispatch]);

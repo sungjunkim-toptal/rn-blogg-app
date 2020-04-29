@@ -50,10 +50,12 @@ const AuthScreen = props => {
     inputValues: {
       email: '',
       password: '',
+      name: '',
     },
     inputValidities: {
       email: false,
       password: false,
+      name: false,
     },
     fromIsValid: false,
   });
@@ -80,10 +82,20 @@ const AuthScreen = props => {
 
   const authHandler = async () => {
     let action;
+    if (
+      !formState.inputValidities.email ||
+      !formState.inputValidities.password
+    ) {
+      return;
+    }
     if (isSignup) {
+      if (!formState.inputValidities.name) {
+        return;
+      }
       action = authActions.signup(
         formState.inputValues.email,
-        formState.inputValues.password
+        formState.inputValues.password,
+        formState.inputValues.name
       );
     } else {
       action = authActions.login(
@@ -130,6 +142,18 @@ const AuthScreen = props => {
               onInputChange={inputChangeHandler}
               initialValue=''
             />
+            {isSignup && (
+              <Input
+                id='name'
+                label='Full Name'
+                keyboardType='default'
+                required
+                autoCapitalize='none'
+                errorText='Please enter your name.'
+                onInputChange={inputChangeHandler}
+                initialValue=''
+              />
+            )}
           </ScrollView>
           <View style={styles.buttonContainer}>
             {isLoading ? (

@@ -112,7 +112,7 @@ const AuthNavigator = createStackNavigator(
 );
 const MainNavigator = createSwitchNavigator({
   Startup: StartupScreen,
-  Auth: AuthNavigator,
+  // Auth: AuthNavigator,
   Blog: BlogDrawerNavigator,
 });
 
